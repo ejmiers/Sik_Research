@@ -71,7 +71,7 @@ filteredData = filterData(rawData, blockSize, threshold)
 # Write the filtered data to the output file
 np.array(filteredData).astype('float32').tofile(newFile)
 
-# Log the number of samples that met the threshold
+# Log the number of samples that met the thresholdgit stat
 print("")
 print("Energy Level Threshold: {}".format(threshold))
 print("Final Number of samples: {}".format(len(filteredData)))
