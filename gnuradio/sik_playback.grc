@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.13'?>
+<?grc format='1' created='3.7.11'?>
 <flow_graph>
   <timestamp>Thu Oct 15 15:50:52 2020</timestamp>
   <block>
@@ -73,20 +73,12 @@
       <value>True</value>
     </param>
     <param>
-      <key>sizing_mode</key>
-      <value>fixed</value>
-    </param>
-    <param>
       <key>thread_safe_setters</key>
       <value></value>
     </param>
     <param>
       <key>title</key>
       <value>SiK Playback</value>
-    </param>
-    <param>
-      <key>placement</key>
-      <value>(0,0)</value>
     </param>
   </block>
   <block>
@@ -101,7 +93,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(168, 68)</value>
+      <value>(184, 68)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -132,7 +124,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(488, 4)</value>
+      <value>(520, 4)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -195,7 +187,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(384, 4)</value>
+      <value>(408, 4)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -254,7 +246,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(168, 4)</value>
+      <value>(184, 4)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -285,7 +277,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(264, 4)</value>
+      <value>(280, 4)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -454,7 +446,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -540,7 +532,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -583,7 +575,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -621,10 +613,6 @@
   <block>
     <key>blocks_file_source</key>
     <param>
-      <key>begin_tag</key>
-      <value>pmt.PMT_NIL</value>
-    </param>
-    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -642,7 +630,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>F:\Research\Lab PC\Data\Sik_Capture_Raw.data</value>
+      <value>/home/ericmiers/Documents/Data/Sik_Capture_Filtered_46.002491.data</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -795,7 +783,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -846,7 +834,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -948,7 +936,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1070,7 +1058,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1532,11 +1520,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1000, 492)</value>
+      <value>(992, 492)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -1763,7 +1751,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
