@@ -18,6 +18,10 @@ def calculateThreshold(noiseAmplitude, probabilityFA, n):
 
 def filterData(rawData, blockSize, threshold):
 
+    # Use a standard list for filtered data
+    # Python list allows for faster re-allocation than numpy array
+    # Memory overhead is sacrificed for time
+    filteredData = []
     blockNum = 0
 
     # Implements the sliding window algorithm
@@ -33,6 +37,8 @@ def filterData(rawData, blockSize, threshold):
         block = np.fft.fft(rawData[0:blockEnd])
         blockMean = np.mean(np.square(np.absolute(block)))
 
+        #print(blockMean)
+
         # Add the samples in the block to the filtered sample array if the block's mean is greater or equal to the threshold
         if blockMean >= threshold:
             print("block {} above threshold".format(blockNum))
@@ -44,31 +50,26 @@ def filterData(rawData, blockSize, threshold):
     
     return filteredData
 
-# Input File
-dataFile = "../../Lab PC/Data/Sik_Capture_Raw.data"
 
-
-# Load the input file into numpy array and convert the array to real values 
-#rawData = np.fromfile(dataFile, dtype=np.complex64)
-
-# Use a standard list for filtered data
-# Python list allows for faster re-allocation than numpy array
-# Memory overhead is sacrificed for time
-filteredData = []
 
 # Define the https://github.com/ejmiers/Sik_Research.git://github.com/ejmiers/Sik_Research.gitreshold and sample block size.
 #threshold = 1e-3
-blockSize = 2048
+blockSize = 128
 threshold = calculateThreshold(1, 0.10, blockSize)
+print("Energy Level Threshold: {}".format(threshold))
 
-# Filter the Dataset to only include samples above the threshold
-#filteredData = filterData(rawData, blockSize, threshold)
-
-# Output File
+# Input and Output Data Files
+dataFile = "../../Lab PC/Data/Sik_Capture_Raw.data"
 newFile = "../../Lab PC/Data/Sik_Capture_Filtered_{:4f}.data".format(threshold)
 
+# Load the input file into numpy array and convert the array to real values 
+rawData = np.fromfile(dataFile, dtype=np.complex64)
+
+# Filter the Dataset to only include samples above the threshold
+filteredData = filterData(rawData, blockSize, threshold)
+
 # Write the filtered data to the output file
-#np.array(filteredData).astype('float32').tofile(newFile)
+np.array(filteredData).astype('float32').tofile(newFile)
 
 # Log the number of samples that met the threshold
 print("")
