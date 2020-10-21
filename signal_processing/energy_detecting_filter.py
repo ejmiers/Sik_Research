@@ -15,6 +15,9 @@ from scipy.stats import norm
 def calculateThreshold(noiseAmplitude, probabilityFA, n):
     return noiseAmplitude**2 * (abs(norm.ppf(probabilityFA)) * (2*n)**0.5 + n)
 
+def computeNoiseDeviation(noiseSampleFile):
+    noiseData = np.fromfile(dataSampleFile, dtype=np.complex64)
+    return np.std(noiseData)
 
 def filterData(rawData, blockSize, threshold):
 
@@ -37,11 +40,9 @@ def filterData(rawData, blockSize, threshold):
         block = np.fft.fft(rawData[0:blockEnd])
         blockMean = np.mean(np.square(np.absolute(block)))
 
-        #print(blockMean)
-
         # Add the samples in the block to the filtered sample array if the block's mean is greater or equal to the threshold
         if blockMean >= threshold:
-            print("block {} above threshold".format(blockNum))
+            #print("block {} above threshold".format(blockNum))
             filteredData.extend(np.fft.ifft(block).astype('float32').tolist())
 
         # Re-slice array by removing the current block
@@ -51,25 +52,36 @@ def filterData(rawData, blockSize, threshold):
     return filteredData
 
 
+# Input Data Files
+dataSampleFile = "../../Data/Sik_Capture_Raw_10-21-2020.data"
+noiseSampleFile = "../../Data/Sik_Capture_Raw_Noise_10-21-2020.data"
 
-# Define the https://github.com/ejmiers/Sik_Research.git://github.com/ejmiers/Sik_Research.gitreshold and sample block size.
-#threshold = 1e-3
+if noiseSampleFile:
+    print("Computing noise amplitude...")
+    noiseDeviation = computeNoiseDeviation(noiseSampleFile)
+
+else:
+    noiseDeviation = 1
+
+# Define the threshold and sample block size.
+# threshold = 1e-3
 blockSize = 128
-threshold = calculateThreshold(1, 0.10, blockSize)
+threshold = calculateThreshold(noiseAmplitude, 0.10, blockSize)
+
+print("Noise Deviation: {}".format(noiseAmplitude))
 print("Energy Level Threshold: {}".format(threshold))
 
-# Input and Output Data Files
-dataFile = "../../Lab PC/Data/Sik_Capture_Raw.data"
-newFile = "../../Lab PC/Data/Sik_Capture_Filtered_{:4f}.data".format(threshold)
-
 # Load the input file into numpy array and convert the array to real values 
-rawData = np.fromfile(dataFile, dtype=np.complex64)
+rawData = np.fromfile(dataSampleFile, dtype=np.complex64)
 
 # Filter the Dataset to only include samples above the threshold
 filteredData = filterData(rawData, blockSize, threshold)
 
+# Output Data File
+filteredSamplesFile = "../../Data/Sik_Capture_Filtered_{:4f}.data".format(threshold)
+
 # Write the filtered data to the output file
-np.array(filteredData).astype('float32').tofile(newFile)
+np.array(filteredData).astype('float32').tofile(filteredSamplesFile)
 
 # Log the number of samples that met the thresholdgit stat
 print("")
