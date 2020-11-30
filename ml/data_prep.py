@@ -1,3 +1,12 @@
+# Used to create a training and testing dataset from raw IQ data
+# Takes a random subset of samples from each data file to account for memory constraints
+# Data is normalized with the "StandardScaler" transformer -> mean of 0, stddev of 1 (Useful for Gradient Descent)
+# Saves training data and labels, testing data and labels as npy files
+#
+# Eric Miers
+# Christopher Newport University
+# November 30, 2020
+
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import os
