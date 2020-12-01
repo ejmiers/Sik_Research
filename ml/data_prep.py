@@ -31,10 +31,11 @@ def prepData(noise, dataset):
             print("Loading {}".format(signalPath + "\\" + signalFile))
             signalData = np.fromfile(os.path.join(signalPath, signalFile), dtype=np.complex64)
 
-            # Grab ~1000000 random sample from the data
-            numSamples = 1000192
+            # Grab ~5000000 random sample from the data
+            numSamples = 5000064
             numInputs = 128
-            signalSamples = np.random.choice(signalData, numSamples)
+            #signalSamples = np.random.choice(signalData, numSamples)
+            signalSamples = signalData[:numSamples]
             
             # Separate into real and imaginary components -> normalize for Gradient Descent
             real = signalSamples.real
