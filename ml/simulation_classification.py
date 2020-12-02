@@ -1,4 +1,3 @@
-#import tensorflow as tf
 from tensorflow import keras
 from sklearn.utils import shuffle
 from sklearn.model_selection import KFold
@@ -15,18 +14,21 @@ DEVICES = ["dev_0", "dev_1", "dev_2", "dev_3"]
 
 #=============================================================================================
 
-# Load and shuffle Training Data
-X_train = np.load("{}{}/samples_{}.npy".format(PATH, "train", noiseAmp))
-Y_train = np.load("{}{}/labels_{}.npy".format(PATH, "train", noiseAmp))
-
-# X_train, Y_train = shuffle(X_train, Y_train)
+# Load Training Data
+X_train = np.load("{}{}/samples2_{}.npy".format(PATH, "train", noiseAmp))
+Y_train = np.load("{}{}/labels2_{}.npy".format(PATH, "train", noiseAmp))
 
 # Load Testing Data
-X_test = np.load("{}{}/samples_{}.npy".format(PATH, "test", noiseAmp))
-Y_test = np.load("{}{}/labels_{}.npy".format(PATH, "test", noiseAmp))
+X_test = np.load("{}{}/samples2_{}.npy".format(PATH, "test", noiseAmp))
+Y_test = np.load("{}{}/labels2_{}.npy".format(PATH, "test", noiseAmp))
 
+# Make sure data is the correct type
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
+
+# Shuffle Training and Testing Data
+X_train, Y_train = shuffle(X_train, Y_train)
+X_test, Y_test = shuffle(X_test, Y_test)
 
 #=============================================================================================
 
@@ -35,15 +37,15 @@ numFolds = 10
 foldAccuracy = []
 foldLoss = []
 
-inputs = np.concatenate((X_train, X_test))
-targets = np.concatenate((Y_train, Y_test))
+# inputs = np.concatenate((X_train, X_test))
+# targets = np.concatenate((Y_train, Y_test))
 
 kfold = KFold(n_splits=numFolds, shuffle=True)
 
 #=============================================================================================
 
 fold = 1
-for train, test in kfold.split(inputs, targets):
+for train, validate in kfold.split(X_train, Y_train):
     # Build the DNN model
     RegularizedDense = partial(keras.layers.Dense,
                             activation="relu"
@@ -74,29 +76,47 @@ for train, test in kfold.split(inputs, targets):
                 optimizer = keras.optimizers.SGD(lr=0.01, momentum=0.9),
                 metrics=["accuracy"])
 
+    # if fold == 1:
+    #     print('\n=============================================================')
+    #     print(f'Initial Weights:\n')
+    #     print(model.get_weights())
+
+
     print('\n=============================================================')
     print(f'Training fold {fold}...\n')
 
     # Train the model
-    history = model.fit(inputs[train], targets[train], epochs=25)
+    history = model.fit(X_train[train], Y_train[train], epochs=100)
 
-    # Test the model
-    scores = model.evaluate(inputs[test], targets[test])
+    # Validate the model
+    scores = model.evaluate(X_train[validate], Y_train[validate])
     foldLoss.append(scores[0])
     foldAccuracy.append(scores[1] * 100)
     
     print(f"Fold Results: Loss={scores[0]}, Accuracy={scores[1]}")
 
+    if fold == 10:
+
+        # print('\n=============================================================')
+        # print(f'Final Weights:\n')
+        # print(model.get_weights())
+
+        # Test model on novel signal
+        testScores = model.evaluate(X_test, Y_test)
+
+        print('\n=====================Final Results=========================\n')
+        for i in range(len(foldAccuracy)):
+            print(f"Fold {i+1}: Loss={foldLoss[i]}, Accuracy={foldAccuracy[i]}")
+
+        print(f"\nFold Averages: Loss={np.mean(foldLoss)}, Accuracy={np.mean(foldAccuracy)}")
+        print(f"\nTest on novel signal: Loss={testScores[0]}, Accuracy={testScores[1]}")
+        print('\n===========================================================\n')    
+
+        model.save(f"{PATH}models/12_2_2020_10folds.h5")
+
     fold += 1
 
-print('=====================Final Results=========================\n')
-for i in range(len(foldAccuracy)):
-    print(f"Fold {i+1}: Loss={foldLoss[i]}, Accuracy={foldAccuracy[i]}")
-
-print(f"\nFold Averages: Loss={np.mean(foldLoss)}, Accuracy={np.mean(foldAccuracy)}")
-print('\n===========================================================\n')    
-
-model.save(f"{PATH}models/12_1_2020_10folds.h5")
+#=============================================================================================
 
 # # Graph results
 # pd.DataFrame(history.history).plot(figsize=(8,5))
