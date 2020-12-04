@@ -14,15 +14,13 @@ import os
 PATH = "/media/ericmiers/Grad School Data/Research/Data/Simulated Signals/"
 DEVICES = ["dev_0", "dev_1", "dev_2", "dev_3"]
 
-def prepData(noise, dataset):
-
-    path = PATH + dataset
+def prepData(noise):
 
     deviceSamples = []
     deviceLabels = []
 
     for device in DEVICES:
-        devicePath = os.path.join(path, device)
+        devicePath = os.path.join(PATH, device)
         label = DEVICES.index(device)
 
         for signal in os.listdir(devicePath):
@@ -32,17 +30,15 @@ def prepData(noise, dataset):
             signalData = np.fromfile(os.path.join(signalPath, signalFile), dtype=np.complex64)
 
             # Grab ~5000000 random sample from the data
-            numSamples = 5000064
+            #numSamples = 5000064
+            numSamples = 10000000
             numInputs = 128
-            #signalSamples = np.random.choice(signalData, numSamples)
-            signalSamples = signalData[:numSamples]
+            signalSamples = np.random.choice(signalData, numSamples)
+            #signalSamples = signalData[:numSamples]
             
-            # Separate into real and imaginary components -> normalize for Gradient Descent
+            # Separate into real and imaginary components
             real = signalSamples.real
             imag = signalSamples.imag
-
-            #real = signalSamples.real / max(signalSamples.real)
-            #imag = signalSamples.imag / max(signalSamples.imag)
 
             # Produce array: [[[I*128],[Q*128]], [[I*128],[Q*128]]...]
             iq_components = np.ravel(np.column_stack((real, imag))).reshape(-1, 2, 128)
@@ -54,42 +50,26 @@ def prepData(noise, dataset):
     # Merge data, labels
     data = np.concatenate([samples for samples in deviceSamples])
     labels = np.concatenate([labels for labels in deviceLabels])
-    print("Final Shape - {}: {}".format(dataset, data.shape))
+    print("Final Shape: {}".format(data.shape))
 
     return data, labels
 
 
-def normalize(trainData, testData):
-    lenTrain = trainData.shape[0]
-    lenTest = testData.shape[0]
-
-    fullSet = np.concatenate((trainData, testData))
+def normalize(data):
 
     # Normalize for Gradient Descent
-    fullSet = fullSet.reshape(-1,2)
+    data = data.reshape(-1,2)
     scaler = StandardScaler() 
-    fullSet = scaler.fit_transform(fullSet)
-    fullSet = trainData.reshape(-1, 2, 128)
+    data = scaler.fit_transform(data)
+    data = data.reshape(-1, 2, 128)
 
-    # Re-split into training and testing
-    trainDataNorm = fullSet[:lenTrain]
-    testDataNorm = fullSet[len(fullSet)-lenTest:]
-
-    # Check that the sets are the right sizes and return
-    if (lenTrain == trainDataNorm.shape[0]) and (lenTest == testDataNorm.shape[0]):
-        return trainDataNorm, testDataNorm
-    
-    print("ERROR: Training and Testing Dataset Dimensions Altered")
+    return data
 
 
 noise = 0.01 
-trainData, trainLabels = prepData(noise, "train")
-testData, testLabels = prepData(noise, "test")
+data, labels = prepData(noise)
 
-trainDataNorm, testDataNorm = normalize(trainData, testData)
+data = normalize(data)
 
-np.save("{}{}/samples_{}.npy".format(PATH, "train", noise), trainDataNorm)
-np.save("{}{}/labels_{}.npy".format(PATH, "train", noise), trainLabels)
-
-np.save("{}{}/samples_{}.npy".format(PATH, "test", noise), testDataNorm)
-np.save("{}{}/labels_{}.npy".format(PATH, "test", noise), testLabels)
+np.save("{}samples_{}.npy".format(PATH, noise), data)
+np.save("{}labels_{}.npy".format(PATH, noise), labels)
