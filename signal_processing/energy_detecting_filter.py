@@ -12,19 +12,16 @@
 import numpy as np
 from scipy.stats import norm
 
-def calculateThreshold(noiseAmplitude, probabilityFA, n):
-    return noiseAmplitude**2 * (abs(norm.ppf(probabilityFA)) * (2*n)**0.5 + n)
+def calculateThreshold(noiseDeviation, probabilityFA, n):
+    return np.square(noiseDeviation) * (abs(norm.ppf(probabilityFA)) * np.sqrt(2*n) + n)
 
-def computeNoiseDeviation(noiseSampleFile):
-    noiseData = np.fromfile(dataSampleFile, dtype=np.complex64)
-    return np.std(noiseData)
-
-def filterData(rawData, blockSize, threshold):
+def filterSignal(rawData, noiseData, blockSize, threshold):
 
     # Use a standard list for filtered data
     # Python list allows for faster re-allocation than numpy array
     # Memory overhead is sacrificed for time
-    filteredData = []
+    filteredSignal = []
+    reducedNoise = []
     blockNum = 0
 
     # Implements the sliding window algorithm
@@ -37,54 +34,65 @@ def filterData(rawData, blockSize, threshold):
             blockEnd = rawData.shape[0]
         
         # Perform FFt on block, convert to squared magnitude
-        block = np.fft.fft(rawData[0:blockEnd])
+        samples = rawData[0:blockEnd]
+        noise = noiseData[0:blockEnd]
+
+        block = np.fft.fft(samples)
         blockMean = np.mean(np.square(np.absolute(block)))
 
         # Add the samples in the block to the filtered sample array if the block's mean is greater or equal to the threshold
         if blockMean >= threshold:
             #print("block {} above threshold".format(blockNum))
-            filteredData.extend(np.fft.ifft(block).astype('float32').tolist())
-
+            #filteredData.extend(np.fft.ifft(block).astype(np.complex64).tolist())
+            filteredSignal.extend(samples.astype(np.complex64).tolist())
+            reducedNoise.extend(noise.astype(np.complex64).tolist())
+            
         # Re-slice array by removing the current block
         rawData = rawData[blockEnd:]
+        noiseData = noiseData[blockEnd:]
         blockNum += 1
     
-    return filteredData
+    return filteredSignal, reducedNoise
 
 
 # Input Data Files
-dataSampleFile = "../../Data/Sik_Capture_Raw_10-21-2020.data"
-noiseSampleFile = "../../Data/Sik_Capture_Raw_Noise_10-21-2020.data"
+device = "mRo_1"
+noiseSeed = 12
+noiseAmplitude = 0.193
 
-if noiseSampleFile:
+dataSampleFile = "/media/ejmie518/Grad School Data/Research/Data/Hardware Signals/{}/{}_{}.data".format(device, noiseSeed, noiseAmplitude)
+noiseSampleFile = "/media/ejmie518/Grad School Data/Research/Data/Hardware Signals/{}/noise_{}_{}.data".format(device, noiseSeed, noiseAmplitude)
+
+# Load the input files into numpy arrays and convert the array to real values 
+rawData = np.fromfile(dataSampleFile, dtype=np.complex64)
+noiseData = np.fromfile(noiseSampleFile, dtype=np.complex64)
+
+if len(noiseData) > 0:
     print("Computing noise amplitude...")
-    noiseDeviation = computeNoiseDeviation(noiseSampleFile)
-
+    noiseDeviation = np.std(noiseData)
 else:
     noiseDeviation = 1
 
 # Define the threshold and sample block size.
-# threshold = 1e-3
 blockSize = 128
-threshold = calculateThreshold(noiseAmplitude, 0.10, blockSize)
+threshold = calculateThreshold(noiseDeviation, 0.000009, blockSize)
 
-print("Noise Deviation: {}".format(noiseAmplitude))
+print("Noise Deviation: {}".format(noiseDeviation))
 print("Energy Level Threshold: {}".format(threshold))
 
-# Load the input file into numpy array and convert the array to real values 
-rawData = np.fromfile(dataSampleFile, dtype=np.complex64)
-
 # Filter the Dataset to only include samples above the threshold
-filteredData = filterData(rawData, blockSize, threshold)
+filteredSignal, reducedNoise = filterSignal(rawData, noiseData, blockSize, threshold)
 
-# Output Data File
-filteredSamplesFile = "../../Data/Sik_Capture_Filtered_{:4f}.data".format(threshold)
+# Output Data Files
+filteredSignalFile = "/media/ejmie518/Grad School Data/Research/Data/Hardware Signals/{}/filtered_{:4f}_{}_{}.data".format(device, threshold, noiseSeed, noiseAmplitude)
+reducedNoiseFile = "/media/ejmie518/Grad School Data/Research/Data/Hardware Signals/{}/noise_reduced_{:4f}_{}_{}.data".format(device, threshold, noiseSeed, noiseAmplitude)
 
 # Write the filtered data to the output file
-np.array(filteredData).astype('float32').tofile(filteredSamplesFile)
+np.array(filteredSignal).astype(np.complex64).tofile(filteredSignalFile)
+np.array(reducedNoise).astype(np.complex64).tofile(reducedNoiseFile)
 
 # Log the number of samples that met the thresholdgit stat
 print("")
-print("Energy Level Threshold: {}".format(threshold))
-print("Final Number of samples: {}".format(len(filteredData)))
+print("Initial Number of Samples: {}".format(len(rawData)))
+print("Final Number of samples: {}".format(len(filteredSignal)))
 print("")
