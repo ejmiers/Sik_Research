@@ -25,7 +25,11 @@ def prepData(noise):
 
         for signal in os.listdir(devicePath):
             signalPath = os.path.join(devicePath, signal)
-            signalFile = next(s for s in os.listdir(signalPath) if s.endswith(str(noise) + ".data"))
+            signalFile = next((s for s in os.listdir(signalPath) if s.endswith(str(noise) + ".data")), None)
+            
+            if not signalFile:
+                continue
+
             print("Loading {}".format(signalPath + "\\" + signalFile))
             signalData = np.fromfile(os.path.join(signalPath, signalFile), dtype=np.complex64)
 

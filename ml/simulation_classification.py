@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import time
 
 # Globals
 PATH = "/media/ericmiers/Grad School Data/Research/Data/Simulated Signals/"
@@ -13,7 +14,7 @@ DEVICES = ["dev_0", "dev_1", "dev_2", "dev_3"]
 
 noiseAmp = 0.01
 bestModelPath = PATH + 'models/best_model.h5'
-numEpochs = 130
+numEpochs = 300
 #=============================================================================================
 
 # Load Data
@@ -38,6 +39,7 @@ kfold = KFold(n_splits=numFolds, shuffle=True)
 #=============================================================================================
 
 fold = 1
+timeStart = time.time()
 for train, validate in kfold.split(X, Y):
     # Build the DNN model
     RegularizedDense = partial(keras.layers.Dense,
@@ -49,19 +51,21 @@ for train, validate in kfold.split(X, Y):
     model = keras.models.Sequential([
         keras.layers.Flatten(input_shape=[2,128]),
         #keras.layers.BatchNormalization(),
-        # keras.layers.Dropout(rate=0.2),
+        #keras.layers.Dropout(rate=0.8),
         RegularizedDense(300),
         #keras.layers.BatchNormalization(),
-        # keras.layers.Dropout(rate=0.2),
+        keras.layers.Dropout(rate=0.1),
         RegularizedDense(300),
         #keras.layers.BatchNormalization(),
-        # keras.layers.Dropout(rate=0.2),
+        keras.layers.Dropout(rate=0.1),
         RegularizedDense(300),
         #keras.layers.BatchNormalization(),
-        # keras.layers.Dropout(rate=0.2),
-        #RegularizedDense(100),
+        keras.layers.Dropout(rate=0.1),
+        RegularizedDense(300),
+        keras.layers.Dropout(rate=0.1),
+        RegularizedDense(300),
         # keras.layers.BatchNormalization(),
-        # keras.layers.Dropout(rate=0.2),
+        #keras.layers.Dropout(rate=0.5),
         keras.layers.Dense(4, activation="softmax")
     ])
 
@@ -75,11 +79,13 @@ for train, validate in kfold.split(X, Y):
     print(f'Training fold {fold}...\n')
 
     # Implement early stopping with checkpoints to curb overfitting
-    es = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=10)
+    es = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=20)
     mc = keras.callbacks.ModelCheckpoint(bestModelPath, monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
     # Train the model
     history = model.fit(X[train], Y[train], validation_data=(X[validate], Y[validate]), epochs=numEpochs, callbacks=[es, mc])
+
+    
 
     # Validate the best model
     bestModel = keras.models.load_model(bestModelPath)
@@ -89,17 +95,19 @@ for train, validate in kfold.split(X, Y):
     
     print(f"Fold Results (Best Model): Loss={scores[0]}, Accuracy={scores[1]}")
 
-    if fold == 10:
+    if fold == numFolds:
+        timeEnd = time.time()
 
         print('\n=====================Final Results=========================\n')
         for i in range(len(foldAccuracy)):
             print(f"Fold {i+1}: Loss={foldLoss[i]}, Accuracy={foldAccuracy[i]}")
 
         print(f"\nFold Averages: Loss={np.mean(foldLoss)}, Accuracy={np.mean(foldAccuracy)}")
-        print(f"\nTest on novel signal: Loss={testScores[0]}, Accuracy={testScores[1]}")
+        #print(f"\nTest on novel signal: Loss={testScores[0]}, Accuracy={testScores[1]}")
+        print(f"\nTotal Training Time (s): {timeEnd-timeStart}")
         print('\n===========================================================\n')    
 
-        bestModel.save(f"{PATH}models/12_4_2020_10folds.h5")
+        bestModel.save(f"{PATH}models/12_9_2020_10folds_patience20_300epochs_300x5nodes_Dropout.h5")
 
         # Graph Epoch History of Final Fold
         pd.DataFrame(history.history).plot(figsize=(8,5))
