@@ -60,7 +60,6 @@ PATH = "F:\\Research\\Data\\Hardware Signals\\"
 DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
 
 SNR = "40dB"
-numEpochs = 300
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 runPath = PATH + "models\\" + trainingDate
@@ -90,11 +89,12 @@ X_test, Y_test = shuffle(X_test, Y_test)
 
 #=============================================================================================
 
-# Setup model hyperparameters
+# Setup model hyperparameters, training attributes
 numHiddenLayers = 8
 sizeHiddenLayer = 300
 dropoutRate = 0.1
 batchSize = 128
+numEpochs = 300
 activationHidden = "elu"
 kernelInitializer = "he_normal"
 activationOutput = "softmax"
@@ -167,6 +167,14 @@ for train, validate in kfold.split(X_train, Y_train):
     
     print(f"Fold Results (Best Model): Loss={scores[0]}, Accuracy={scores[1]}")
 
+    # Graph Epoch History of Fold
+    pd.DataFrame(history.history).plot(figsize=(8,5))
+    plt.grid(True)
+    plt.gca().set_ylim(0,1)
+    plt.title("Fold Training Performance - K={}".format(fold))
+    plt.xlabel("Epoch Number")
+    plt.savefig(runPath+"//fold-{}-training.png".format(fold))
+
     if fold == numFolds:
         timeEnd = time.time()
 
@@ -175,15 +183,8 @@ for train, validate in kfold.split(X_train, Y_train):
             print(f"Fold {i+1}: Loss={foldLoss[i]}, Accuracy={foldAccuracy[i]}")
 
         print(f"\nFold Averages: Loss={np.mean(foldLoss)}, Accuracy={np.mean(foldAccuracy)}")
-        #print(f"\nTest on novel signal: Loss={testScores[0]}, Accuracy={testScores[1]}")
         print(f"\nTotal Training Time (s): {timeEnd-timeStart}")
         print('\n===========================================================\n')    
-
-        # Graph Epoch History of Final Fold
-        pd.DataFrame(history.history).plot(figsize=(8,5))
-        plt.grid(True)
-        plt.gca().set_ylim(0,1)
-        plt.savefig(runPath+"//fold-training.png")
 
         # Write the summary File
         writeSummaryFile(foldLoss, foldAccuracy, scores[0], scores[1], timeEnd-timeStart)
