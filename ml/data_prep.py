@@ -1,7 +1,7 @@
 # Used to create a training and testing dataset from raw IQ data
 # Takes a random subset of samples from each data file to account for memory constraints
 # Data is normalized with the "StandardScaler" transformer -> mean of 0, stddev of 1 (Useful for Gradient Descent)
-# Normalization model is saved to a file to be useed to transform novel prediction data
+# Normalization model is saved to a file to be used to transform novel prediction data
 # Saves training data and labels, testing data and labels as npy files
 #
 # Eric Miers
