@@ -44,13 +44,13 @@ def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, t
             f.write("Fold {} - validation loss: {}, validation accuracy: {}\n".format(i+1, foldLoss[i], foldAccuracy[i]))
         
         f.write("\nAverage Model Loss: {}\n".format(np.mean(foldLoss)))
-        f.write("\nStandard Deviation Model Loss: {}\n\n".format(np.std(foldLoss)))
+        f.write("Standard Deviation Model Loss: {}\n\n".format(np.std(foldLoss)))
 
-        f.write("\nAverage Model Accuracy: {}\n".format(np.mean(foldAccuracy)))
-        f.write("\nStandard Deviation Model Accuracy: {}\n\n".format(np.std(foldAccuracy)))
+        f.write("Average Model Accuracy: {}\n".format(np.mean(foldAccuracy)))
+        f.write("Standard Deviation Model Accuracy: {}\n\n".format(np.std(foldAccuracy)))
 
-        f.write("\nBest Model Loss: {}\n".format(bestModelLoss))
-        f.write("\nBest Model Accuracy: {}\n\n".format(bestModelAccuracy))
+        f.write("Best Model Loss: {}\n".format(bestModelLoss))
+        f.write("Best Model Accuracy: {}\n\n".format(bestModelAccuracy))
 
         f.write("Total trainining time (s): {}".format(totalTime))
 
