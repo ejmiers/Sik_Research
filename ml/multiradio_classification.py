@@ -179,13 +179,13 @@ for train, validate in kfold.split(X_train, Y_train):
         print(f"\nTotal Training Time (s): {timeEnd-timeStart}")
         print('\n===========================================================\n')    
 
-        # Write the summary File
-        writeSummaryFile(foldLoss, foldAccuracy, scores[0], scores[1], timeEnd-timeStart)
-
         # Graph Epoch History of Final Fold
         pd.DataFrame(history.history).plot(figsize=(8,5))
         plt.grid(True)
         plt.gca().set_ylim(0,1)
         plt.savefig(runPath+"//fold-training.png")
+
+        # Write the summary File
+        writeSummaryFile(foldLoss, foldAccuracy, scores[0], scores[1], timeEnd-timeStart)
 
     fold += 1
