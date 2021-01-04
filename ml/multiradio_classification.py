@@ -27,7 +27,7 @@ def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, t
         f.write("Loss Function: {}\n".format(lossFunction))
         f.write("Optimizer: {}\n".format(optimizer))
         f.write("Learning Rate: {}\n".format(learningRate))
-        f.write("Momentum: {}\n\n".format(optMomentum))
+        f.write("Momentum: {}\n".format(optMomentum))
         f.write("Batch Size: {}\n\n".format(batchSize))
 
         f.write("Run Description\n")
@@ -49,8 +49,8 @@ def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, t
         f.write("\nAverage Model Accuracy: {}\n".format(np.mean(foldAccuracy)))
         f.write("\nStandard Deviation Model Accuracy: {}\n\n".format(np.std(foldAccuracy)))
 
-        f.write("\nBest Model Loss: {}\n".format(np.mean(bestModelLoss)))
-        f.write("\nBest Model Accuracy: {}\n\n".format(np.std(bestModelAccuracy)))
+        f.write("\nBest Model Loss: {}\n".format(bestModelLoss))
+        f.write("\nBest Model Accuracy: {}\n\n".format(bestModelAccuracy))
 
         f.write("Total trainining time (s): {}".format(totalTime))
 
