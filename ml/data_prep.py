@@ -1,18 +1,16 @@
-# Used to create a training and testing dataset from raw IQ data
-# Takes a random subset of samples from each data file to account for memory constraints
-# Data is normalized with the "StandardScaler" transformer -> mean of 0, stddev of 1 (Useful for Gradient Descent)
-# Normalization model is saved to a file to be used to transform novel prediction data
-# Saves training data and labels, testing data and labels as npy files
+# Used to create a dataset from raw IQ data for a specified SNR
+# Takes a subset of samples from each data file to account for memory constraints
+# Data is normalized with the StandardScaler model developed in the training set preparation script 
+# Saves data and labels as npy files
 #
 # Eric Miers
 # Christopher Newport University
-# November 30, 2020
+# January 4, 2021
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from joblib import dump
+from joblib import load
 import os
-
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
 DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
@@ -20,10 +18,8 @@ normalize = True
 
 def prepData(noise):
 
-    deviceSamplesTrain = []
-    deviceLabelsTrain = []
-    deviceSamplesTest = []
-    deviceLabelsTest = []
+    deviceSamples = []
+    deviceLabels = []
 
     for device in DEVICES:
         devicePath = os.path.join(PATH, device)
@@ -38,72 +34,49 @@ def prepData(noise):
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
         # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
-        numSamplesTrain = 10000000
-        numSamplesTest = 2560000
+        numSamplesTest = 10000000
         numInputs = 128
 
         #signalSamples = np.random.choice(signalData, numSamples)
-        signalSamplesTrain = signalData[:numSamplesTrain]
-        signalSamplesTest = signalData[numSamplesTrain:numSamplesTrain+numSamplesTest]
+        signalSamples = signalData[:numSamplesTrain]
         
         # Separate into real and imaginary components
-        realTrain = signalSamplesTrain.real
-        imagTrain = signalSamplesTrain.imag
-
-        realTest = signalSamplesTest.real
-        imagTest = signalSamplesTest.imag
+        real = signalSamples.real
+        imag = signalSamples.imag
 
         # Produce array: [[[I*128],[Q*128]], [[I*128],[Q*128]]...]
-        iq_componentsTrain = np.ravel(np.column_stack((realTrain, imagTrain))).reshape(-1, 2, 128)
-        iq_componentsTest = np.ravel(np.column_stack((realTest, imagTest))).reshape(-1, 2, 128)
+        iq_components = np.ravel(np.column_stack((real, imag))).reshape(-1, 2, 128)
 
-        deviceSamplesTrain.append(iq_componentsTrain)
-        deviceSamplesTest.append(iq_componentsTest)
+        deviceSamples.append(iq_components)
 
         # Append Device Labels
-        deviceLabelsTrain.append([label] * iq_componentsTrain.shape[0])
-        deviceLabelsTest.append([label] * iq_componentsTest.shape[0])
+        deviceLabels.append([label] * iq_components.shape[0])
 
     # Merge data, labels
-    dataTrain = np.concatenate([samples for samples in deviceSamplesTrain])
-    labelsTrain = np.concatenate([labels for labels in deviceLabelsTrain])
+    data = np.concatenate([samples for samples in deviceSamples])
+    labels = np.concatenate([labels for labels in deviceLabels])
 
-    dataTest = np.concatenate([samples for samples in deviceSamplesTest])
-    labelsTest = np.concatenate([labels for labels in deviceLabelsTest])
+    print("Final Shape: {}".format(data.shape))
 
-    print("Final Shape - Training: {}".format(dataTrain.shape))
-    print("Final Shape - Testing: {}".format(dataTest.shape))
-
-    return dataTrain, labelsTrain, dataTest, labelsTest
+    return data, labels
 
 
-def normalize(dataTrain, dataTest):
+def normalize(data):
 
     # Normalize for Gradient Descent
-    dataTrain = dataTrain.reshape(-1,2)
-    scaler = StandardScaler() 
-    dataTrain = scaler.fit_transform(dataTrain)
-    dataTrain = dataTrain.reshape(-1, 2, 128)
+    data = data.reshape(-1,2)
+    scaler = load("{}data_normalization_scaler.bin".format(PATH))
+    data = scaler.transform(data)
+    data = dataTrain.reshape(-1, 2, 128)
 
-    dataTest = dataTest.reshape(-1,2)
-    dataTest = scaler.transform(dataTest)
-    dataTest = dataTest.reshape(-1, 2, 128)
-
-    # Save normalization model so predicted value scaling matches the training data
-    scalerModelPath = "{}data_normalization_scaler.bin".format(PATH)
-    dump(scaler, scalerModelPath, compress=True)
-
-    return dataTrain, dataTest
+    return data
 
 
-noise = "40dB" 
-dataTrain, labelsTrain, dataTest, labelsTest = prepData(noise)
+noise = "35dB" 
+data, labels = prepData(noise)
 
 if normalize:
-    dataTrain, dataTest = normalize(dataTrain, dataTest)
+    data = normalize(data)
 
-np.save("{}training_samples_{}.npy".format(PATH, noise), dataTrain)
-np.save("{}training_labels_{}.npy".format(PATH, noise), labelsTrain)
-
-np.save("{}testing_samples_{}.npy".format(PATH, noise), dataTest)
-np.save("{}testing_labels_{}.npy".format(PATH, noise), labelsTest)
+np.save("{}samples_{}.npy".format(PATH, noise), data)
+np.save("{}labels_{}.npy".format(PATH, noise), labels)
