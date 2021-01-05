@@ -65,7 +65,7 @@ def normalize(data):
 
     # Normalize for Gradient Descent
     data = data.reshape(-1,2)
-    scaler = load("{}data_normalization_scaler.bin".format(PATH))
+    scaler = load("{}multiclass_data_normalization_scaler.bin".format(PATH))
     data = scaler.transform(data)
     data = dataTrain.reshape(-1, 2, 128)
 
@@ -78,5 +78,5 @@ data, labels = prepData(noise)
 if normalize:
     data = normalize(data)
 
-np.save("{}samples_{}.npy".format(PATH, noise), data)
-np.save("{}labels_{}.npy".format(PATH, noise), labels)
+np.save("{}multiclass_samples_{}.npy".format(PATH, noise), data)
+np.save("{}multiclass_labels_{}.npy".format(PATH, noise), labels)

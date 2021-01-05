@@ -90,7 +90,7 @@ def normalize(dataTrain, dataTest):
     dataTest = dataTest.reshape(-1, 2, 128)
 
     # Save normalization model so predicted value scaling matches the training data
-    scalerModelPath = "{}data_normalization_scaler.bin".format(PATH)
+    scalerModelPath = "{}multiclass_data_normalization_scaler.bin".format(PATH)
     dump(scaler, scalerModelPath, compress=True)
 
     return dataTrain, dataTest
@@ -102,8 +102,8 @@ dataTrain, labelsTrain, dataTest, labelsTest = prepData(noise)
 if normalize:
     dataTrain, dataTest = normalize(dataTrain, dataTest)
 
-np.save("{}training_samples_{}.npy".format(PATH, noise), dataTrain)
-np.save("{}training_labels_{}.npy".format(PATH, noise), labelsTrain)
+np.save("{}multiclass_training_samples_{}.npy".format(PATH, noise), dataTrain)
+np.save("{}multiclass_training_labels_{}.npy".format(PATH, noise), labelsTrain)
 
-np.save("{}testing_samples_{}.npy".format(PATH, noise), dataTest)
-np.save("{}testing_labels_{}.npy".format(PATH, noise), labelsTest)
+np.save("{}multiclass_testing_samples_{}.npy".format(PATH, noise), dataTest)
+np.save("{}multiclass_testing_labels_{}.npy".format(PATH, noise), labelsTest)

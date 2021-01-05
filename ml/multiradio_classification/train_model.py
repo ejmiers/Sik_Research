@@ -62,22 +62,22 @@ DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "R
 SNR = "40dB"
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-runPath = PATH + "models\\" + trainingDate
+runPath = PATH + "models\\multiradio" + trainingDate
 bestModelPath = runPath + "\\best_model.h5"
 
 # Create Necessary Directories
-if not os.path.isdir(PATH + "models"):
-    os.mkdir(PATH + "models")
+if not os.path.isdir(PATH + "models\\multiradio"):
+    os.mkdir(PATH + "models\\multiradio")
 os.mkdir(runPath)
 
 #=============================================================================================
 
 # Load Data
-X_train = np.load("{}training_samples_{}.npy".format(PATH, SNR))
-Y_train = np.load("{}training_labels_{}.npy".format(PATH, SNR))
+X_train = np.load("{}multiclass_training_samples_{}.npy".format(PATH, SNR))
+Y_train = np.load("{}multiclass_training_labels_{}.npy".format(PATH, SNR))
 
-X_test = np.load("{}testing_samples_{}.npy".format(PATH, SNR))
-Y_test = np.load("{}testing_labels_{}.npy".format(PATH, SNR))
+X_test = np.load("{}multiclass_testing_samples_{}.npy".format(PATH, SNR))
+Y_test = np.load("{}multiclass_testing_labels_{}.npy".format(PATH, SNR))
 
 # Make sure data is the correct type
 X_train = X_train.astype('float32')
