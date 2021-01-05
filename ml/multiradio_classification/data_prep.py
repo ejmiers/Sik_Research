@@ -34,11 +34,11 @@ def prepData(noise):
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
         # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
-        numSamplesTest = 10000000
+        numSamples = 10000000
         numInputs = 128
 
         #signalSamples = np.random.choice(signalData, numSamples)
-        signalSamples = signalData[:numSamplesTrain]
+        signalSamples = signalData[:numSamples]
         
         # Separate into real and imaginary components
         real = signalSamples.real
@@ -67,7 +67,7 @@ def normalize(data):
     data = data.reshape(-1,2)
     scaler = load("{}multiclass_data_normalization_scaler.bin".format(PATH))
     data = scaler.transform(data)
-    data = dataTrain.reshape(-1, 2, 128)
+    data = data.reshape(-1, 2, 128)
 
     return data
 
