@@ -13,12 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from joblib import dump
 import os
 
-
-PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-normalize = True
-
-def prepData(noise):
+def prepData(SNR):
 
     deviceSamplesTrain = []
     deviceLabelsTrain = []
@@ -29,12 +24,12 @@ def prepData(noise):
         devicePath = os.path.join(PATH, device)
         label = DEVICES.index(device)
 
-        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith(str(noise) + ".data")), None)
+        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith("_" + str(SNR) + ".data")), None)
    
         if not signalFile:
             continue
 
-        print("Loading {}".format(devicePath + signalFile))
+        print("Loading {}".format(devicePath + "\\" + signalFile))
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
         # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
@@ -96,14 +91,18 @@ def normalize(dataTrain, dataTest):
     return dataTrain, dataTest
 
 
-noise = "40dB" 
-dataTrain, labelsTrain, dataTest, labelsTest = prepData(noise)
+PATH = "F:\\Research\\Data\\Hardware Signals\\"
+DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+dataNormalize = True
 
-if normalize:
+SNR = "40dB" 
+dataTrain, labelsTrain, dataTest, labelsTest = prepData(SNR)
+
+if dataNormalize:
     dataTrain, dataTest = normalize(dataTrain, dataTest)
 
-np.save("{}multiclass_training_samples_{}.npy".format(PATH, noise), dataTrain)
-np.save("{}multiclass_training_labels_{}.npy".format(PATH, noise), labelsTrain)
+np.save("{}multiclass_training_samples_{}.npy".format(PATH, SNR), dataTrain)
+np.save("{}multiclass_training_labels_{}.npy".format(PATH, SNR), labelsTrain)
 
-np.save("{}multiclass_testing_samples_{}.npy".format(PATH, noise), dataTest)
-np.save("{}multiclass_testing_labels_{}.npy".format(PATH, noise), labelsTest)
+np.save("{}multiclass_testing_samples_{}.npy".format(PATH, SNR), dataTest)
+np.save("{}multiclass_testing_labels_{}.npy".format(PATH, SNR), labelsTest)

@@ -12,10 +12,6 @@ from sklearn.preprocessing import StandardScaler
 from joblib import load
 import os
 
-PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-normalize = True
-
 def prepData(noise):
 
     deviceSamples = []
@@ -25,12 +21,12 @@ def prepData(noise):
         devicePath = os.path.join(PATH, device)
         label = DEVICES.index(device)
 
-        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith(str(noise) + ".data")), None)
+        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith("_" + str(noise) + ".data")), None)
    
         if not signalFile:
             continue
 
-        print("Loading {}".format(devicePath + signalFile))
+        print("Loading {}".format(devicePath + "\\" + signalFile))
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
         # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
@@ -38,7 +34,8 @@ def prepData(noise):
         numInputs = 128
 
         #signalSamples = np.random.choice(signalData, numSamples)
-        signalSamples = signalData[:numSamples]
+        # signalSamples = signalData[:numSamples]
+        signalSamples = signalData[len(signalData)-numSamples:len(signalData)]
         
         # Separate into real and imaginary components
         real = signalSamples.real
@@ -72,11 +69,15 @@ def normalize(data):
     return data
 
 
-noise = "35dB" 
+PATH = "F:\\Research\\Data\\Hardware Signals\\"
+DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+dataNormalize = True
+
+noise = "40dB" 
 data, labels = prepData(noise)
 
-if normalize:
+if dataNormalize:
     data = normalize(data)
 
-np.save("{}multiclass_samples_{}.npy".format(PATH, noise), data)
-np.save("{}multiclass_labels_{}.npy".format(PATH, noise), labels)
+np.save("{}multiclass_prediction_samples_{}.npy".format(PATH, noise), data)
+np.save("{}multiclass_prediction_labels_{}.npy".format(PATH, noise), labels)

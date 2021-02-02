@@ -9,7 +9,8 @@ import numpy as np
 import os
 import time
 
-def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, totalTime):
+
+def writeSummaryFile():
     filename = runPath + "\\training_summary.txt"
 
     with open(filename, "w") as f:
@@ -38,11 +39,17 @@ def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, t
         f.write("Early Stopping Mointor: {}\n".format(esMonitor))
         f.write("Best Model Metric: {}\n\n".format(bestModelMetric))
 
+
+def writeResultsToSummary(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, totalTime):
+    filename = runPath + "\\training_summary.txt"
+
+    with open(filename, "a") as f:
         f.write("Run Results\n")
         f.write("---------------\n")
+
         for i in range(0, numFolds):
             f.write("Fold {} - validation loss: {}, validation accuracy: {}\n".format(i+1, foldLoss[i], foldAccuracy[i]))
-        
+            
         f.write("\nAverage Model Loss: {}\n".format(np.mean(foldLoss)))
         f.write("Standard Deviation Model Loss: {}\n\n".format(np.std(foldLoss)))
 
@@ -53,7 +60,6 @@ def writeSummaryFile(foldLoss, foldAccuracy, bestModelLoss, bestModelAccuracy, t
         f.write("Best Model Accuracy: {}\n\n".format(bestModelAccuracy))
 
         f.write("Total trainining time (s): {}".format(totalTime))
-
         
 # Globals
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
@@ -62,11 +68,13 @@ DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "R
 SNR = "40dB"
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-runPath = PATH + "models\\multiradio" + trainingDate
+runPath = PATH + "models\\multiradio\\" + trainingDate
 bestModelPath = runPath + "\\best_model.h5"
 
 # Create Necessary Directories
 if not os.path.isdir(PATH + "models\\multiradio"):
+    if not os.path.isdir(PATH + "models"):
+        os.mkdir(PATH + "models")
     os.mkdir(PATH + "models\\multiradio")
 os.mkdir(runPath)
 
@@ -114,6 +122,8 @@ foldLoss = []
 kfold = KFold(n_splits=numFolds, shuffle=True)
 
 #=============================================================================================
+
+writeSummaryFile()
 
 fold = 1
 timeStart = time.time()
@@ -164,6 +174,8 @@ for train, validate in kfold.split(X_train, Y_train):
     scores = bestModel.evaluate(X_test, Y_test)
     foldLoss.append(scores[0])
     foldAccuracy.append(scores[1])
+
+    bestModel.save(runPath+"//best_model_fold{}.h5".format(fold))
     
     print(f"Fold Results (Best Model): Loss={scores[0]}, Accuracy={scores[1]}")
 
@@ -187,6 +199,6 @@ for train, validate in kfold.split(X_train, Y_train):
         print('\n===========================================================\n')    
 
         # Write the summary File
-        writeSummaryFile(foldLoss, foldAccuracy, scores[0], scores[1], timeEnd-timeStart)
+        writeResultsToSummary(foldLoss, foldAccuracy, scores[0], scores[1], timeEnd-timeStart)
 
     fold += 1
