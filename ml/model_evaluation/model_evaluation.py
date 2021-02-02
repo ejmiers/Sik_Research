@@ -8,28 +8,53 @@ import matplotlib
 import os
 import time
 
+np.set_printoptions(threshold=np.inf)
 
 # Setup PATHs
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-MODEL = "01-04-2021_12-56-56"
-MODEL_PATH = "F:\\Research\\Data\\Hardware Signals\\models\\" + MODEL 
-MODEL_FILE = MODEL_PATH + "\\best_model.h5"
+DATASET = "binary_mRo_1_4-rogues_no_noise\\"
+DATASET_PATH = PATH + DATASET
+MODEL_TYPE = "binary"
+MODEL = "02-01-2021_22-11-43 (mRo_1 Known)"
+MODEL_PATH = "F:\\Research\\Data\\Hardware Signals\\models\\" + MODEL_TYPE + "\\" + MODEL 
+MODEL_FILE = MODEL_PATH + "\\best_model_rogue_device_3DR_TL1.h5"
 
 # Set SNR of interest
-SNR = "40dB"
-
-# Confusion Matrix Parameters
-title = "Confusion Matrix, {}".format(SNR)
-filenameCM = MODEL_PATH +"\\confusion-matrix_{}.png".format(SNR)
-filenameSummary = MODEL_PATH +"\\model-evaluation-summary_{}.txt".format(SNR)
-labels = [0,1,2,3,4,5,6,7]
-normalize = False # True = use prediction percentages, False = use prediction counts
+SNR = "2dB"
 
 # Load the model
 model = keras.models.load_model(MODEL_FILE)
 
-X_test = np.load("{}testing_samples_{}.npy".format(PATH, SNR))
-Y_test = np.load("{}testing_labels_{}.npy".format(PATH, SNR))
+# Establish additional parameters depending on model type
+if MODEL_TYPE == "binary":
+    labels = [0,1]
+    KNOWN_DEVICE = "mRo_1"
+    ROGUE_DEVICE = "RFD900_114"
+
+    # Create Output directories for specific model evaluations
+    RESULTS_PATH = MODEL_PATH + "\\{}_{}".format(KNOWN_DEVICE, ROGUE_DEVICE)
+    if not os.path.isdir(RESULTS_PATH):
+        os.mkdir(RESULTS_PATH)
+
+    X_test = np.load("{}binary_prediction_samples_{}_{}_{}.npy".format(DATASET_PATH, KNOWN_DEVICE, ROGUE_DEVICE, SNR))
+    Y_test = np.load("{}binary_prediction_labels_{}_{}_{}.npy".format(DATASET_PATH, KNOWN_DEVICE, ROGUE_DEVICE, SNR))
+
+    filenameCM = RESULTS_PATH +"\\confusion-matrix_{}.png".format(SNR)
+    filenameSummary = RESULTS_PATH +"\\model-evaluation-summary_{}.txt".format(SNR)
+
+else:
+
+    # Create Output directories for specific model evaluations
+    RESULTS_PATH = MODEL_PATH + "\\{}".format("evaluation")
+    if not os.path.isdir(RESULTS_PATH):
+        os.mkdir(RESULTS_PATH)
+
+    labels = [0,1,2,3,4,5,6,7]
+    X_test = np.load("{}multiclass_prediction_samples_{}.npy".format(PATH, SNR))
+    Y_test = np.load("{}multiclass_prediction_labels_{}.npy".format(PATH, SNR))
+
+    filenameCM = RESULTS_PATH +"\\confusion-matrix_{}.png".format(SNR)
+    filenameSummary = RESULTS_PATH +"\\model-evaluation-summary_{}.txt".format(SNR)
 
 # Make sure data is the correct type
 X_test = X_test.astype('float32')
@@ -39,7 +64,12 @@ X_test, Y_test = shuffle(X_test, Y_test)
 
 # Make predictions and evaluate with confusion matrix
 predictions = model.predict(X_test)
-predictions = np.argmax(predictions, axis=1)
+
+# If the model is binary, transform predictions from probabilities to binary labels
+if MODEL_TYPE == "binary":
+    predictions = [1 * (x[0]>=0.5) for x in predictions]
+else:
+    predictions = np.argmax(predictions, axis=1)
 
 cm = confusion_matrix(Y_test, predictions)
 
@@ -47,17 +77,18 @@ accuracy = np.trace(cm) / float(np.sum(cm))
 misclass = 1 - accuracy
 
 # F1 Metrics calculated differently depending on model type
-if len(labels) > 2:
-    precision = precision_score(Y_test, predictions, average="weighted")
-    recall = recall_score(Y_test, predictions, average="weighted")
-    F1 = f1_score(Y_test, predictions, average="weighted")
-else:
+if MODEL_TYPE == "binary":
     precision = precision_score(Y_test, predictions)
     recall = recall_score(Y_test, predictions)
     F1 = f1_score(Y_test, predictions)
+else:
+    precision = precision_score(Y_test, predictions, average="weighted")
+    recall = recall_score(Y_test, predictions, average="weighted")
+    F1 = f1_score(Y_test, predictions, average="weighted")
 
 # Plot the matrix and save to file
-title +="\nF1 = {}".format(F1)
+title = "Confusion Matrix, {}\nF1 = {}".format(SNR, F1)
+normalize = False # True = use prediction percentages, False = use prediction counts
 plot_confusion_matrix(cm, normalize=normalize, target_names=labels, title=title, filename=filenameCM)
 
 # Write the summary File
