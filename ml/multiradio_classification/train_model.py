@@ -9,6 +9,27 @@ import numpy as np
 import os
 import time
 
+# Early stopping callback based on val loss threshold
+#
+# Code by ZFTurbo
+# https://stackoverflow.com/questions/37293642/how-to-tell-keras-stop-training-based-on-loss-value
+class EarlyStoppingByLossVal(keras.callbacks.Callback):
+    def __init__(self, monitor='val_loss', value=0.09, verbose=0):
+        super(keras.callbacks.Callback, self).__init__()
+        self.monitor = monitor
+        self.value = value
+        self.verbose = verbose
+
+    def on_epoch_end(self, epoch, logs={}):
+        current = logs.get(self.monitor)
+        if current is None:
+            warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
+
+        if current < self.value:
+            if self.verbose > 0:
+                print("Epoch %05d: early stopping THR" % epoch)
+            self.model.stop_training = True
+
 
 def writeSummaryFile():
     filename = runPath + "\\training_summary.txt"
@@ -62,10 +83,12 @@ def writeResultsToSummary(foldLoss, foldAccuracy, bestModelLoss, bestModelAccura
         f.write("Total trainining time (s): {}".format(totalTime))
         
 # Globals
-PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-
 SNR = "40dB"
+
+PATH = "F:\\Research\\Data\\Hardware Signals\\"
+DATASET_PATH =  PATH + "multiradio_3DR-devices_{}\\".format(SNR)
+# DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 runPath = PATH + "models\\multiradio\\" + trainingDate
@@ -81,24 +104,24 @@ os.mkdir(runPath)
 #=============================================================================================
 
 # Load Data
-X_train = np.load("{}multiclass_training_samples_{}.npy".format(PATH, SNR))
-Y_train = np.load("{}multiclass_training_labels_{}.npy".format(PATH, SNR))
+X_train = np.load("{}multiclass_training_samples_{}.npy".format(DATASET_PATH, SNR))
+Y_train = np.load("{}multiclass_training_labels_{}.npy".format(DATASET_PATH, SNR))
 
-X_test = np.load("{}multiclass_testing_samples_{}.npy".format(PATH, SNR))
-Y_test = np.load("{}multiclass_testing_labels_{}.npy".format(PATH, SNR))
+X_test = np.load("{}multiclass_testing_samples_{}.npy".format(DATASET_PATH, SNR))
+Y_test = np.load("{}multiclass_testing_labels_{}.npy".format(DATASET_PATH, SNR))
 
 # Make sure data is the correct type
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 
 # Shuffle Data
-X_train, Y_train = shuffle(X_train, Y_train)
-X_test, Y_test = shuffle(X_test, Y_test)
+X_train, Y_train = shuffle(X_train, Y_train, random_state=10)
+X_test, Y_test = shuffle(X_test, Y_test, random_state=10)
 
 #=============================================================================================
 
 # Setup model hyperparameters, training attributes
-numHiddenLayers = 8
+numHiddenLayers = 3
 sizeHiddenLayer = 300
 dropoutRate = 0.1
 batchSize = 128
@@ -112,7 +135,7 @@ learningRate = 0.01
 optMomentum = 0.9
 esMonitor = "validation loss - minimum"
 bestModelMetric = "validation accuracy - maximum"
-esPatience = 20
+esPatience = 15
 
 # Setup K-Fold Cross Validation Splits
 numFolds = 10
@@ -142,16 +165,18 @@ for train, validate in kfold.split(X_train, Y_train):
         RegularizedDense(sizeHiddenLayer),
         keras.layers.Dropout(rate=dropoutRate),
         RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dropout(rate=dropoutRate),
-        RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dropout(rate=dropoutRate),
-        RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dropout(rate=dropoutRate),
-        RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dropout(rate=dropoutRate),
-        RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dropout(rate=dropoutRate),
-        RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
+        # keras.layers.Dropout(rate=dropoutRate),
+        # RegularizedDense(sizeHiddenLayer),
         keras.layers.Dense(len(DEVICES), activation=activationOutput)
     ])
 
@@ -163,11 +188,12 @@ for train, validate in kfold.split(X_train, Y_train):
     print(f'Training fold {fold}...\n')
 
     # Implement early stopping with checkpoints to curb overfitting
-    es = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=esPatience)
+    esEpochs = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=esPatience)
+    #esValLoss = EarlyStoppingByLossVal(monitor='val_loss', value=0.09, verbose=1)
     mc = keras.callbacks.ModelCheckpoint(bestModelPath, monitor='val_accuracy', mode='max', verbose=1, save_best_only=True)
 
     # Train the model
-    history = model.fit(X_train[train], Y_train[train], validation_data=(X_train[validate], Y_train[validate]), epochs=numEpochs, batch_size=batchSize, callbacks=[es, mc])
+    history = model.fit(X_train[train], Y_train[train], validation_data=(X_train[validate], Y_train[validate]), epochs=numEpochs, batch_size=batchSize, callbacks=[esEpochs, mc])
 
     # Evaluate the best model
     bestModel = keras.models.load_model(bestModelPath)

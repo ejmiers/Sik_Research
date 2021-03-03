@@ -10,14 +10,17 @@ import time
 
 np.set_printoptions(threshold=np.inf)
 
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+configuration = "GPU"
+
 # Setup PATHs
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DATASET = "binary_mRo_1_4-rogues_no_noise\\"
+DATASET = "multiradio_RFD900-devices_40dB\\"
 DATASET_PATH = PATH + DATASET
-MODEL_TYPE = "binary"
-MODEL = "02-01-2021_22-11-43 (mRo_1 Known)"
+MODEL_TYPE = "multiradio"
+MODEL = "02-23-2021_22-25-00 (RFD900)"
 MODEL_PATH = "F:\\Research\\Data\\Hardware Signals\\models\\" + MODEL_TYPE + "\\" + MODEL 
-MODEL_FILE = MODEL_PATH + "\\best_model_rogue_device_3DR_TL1.h5"
+MODEL_FILE = MODEL_PATH + "\\best_model.h5"
 
 # Set SNR of interest
 SNR = "2dB"
@@ -29,7 +32,7 @@ model = keras.models.load_model(MODEL_FILE)
 if MODEL_TYPE == "binary":
     labels = [0,1]
     KNOWN_DEVICE = "mRo_1"
-    ROGUE_DEVICE = "RFD900_114"
+    ROGUE_DEVICE = "mRo_2"
 
     # Create Output directories for specific model evaluations
     RESULTS_PATH = MODEL_PATH + "\\{}_{}".format(KNOWN_DEVICE, ROGUE_DEVICE)
@@ -49,9 +52,9 @@ else:
     if not os.path.isdir(RESULTS_PATH):
         os.mkdir(RESULTS_PATH)
 
-    labels = [0,1,2,3,4,5,6,7]
-    X_test = np.load("{}multiclass_prediction_samples_{}.npy".format(PATH, SNR))
-    Y_test = np.load("{}multiclass_prediction_labels_{}.npy".format(PATH, SNR))
+    labels = [0,1,2,3]
+    X_test = np.load("{}multiclass_prediction_samples_{}.npy".format(DATASET_PATH, SNR))
+    Y_test = np.load("{}multiclass_prediction_labels_{}.npy".format(DATASET_PATH, SNR))
 
     filenameCM = RESULTS_PATH +"\\confusion-matrix_{}.png".format(SNR)
     filenameSummary = RESULTS_PATH +"\\model-evaluation-summary_{}.txt".format(SNR)
@@ -60,10 +63,14 @@ else:
 X_test = X_test.astype('float32')
 
 # Shuffle Data
-X_test, Y_test = shuffle(X_test, Y_test)
+X_test, Y_test = shuffle(X_test, Y_test, random_state=10)
 
 # Make predictions and evaluate with confusion matrix
+num_predictions = Y_test.shape
+start = time.time()
 predictions = model.predict(X_test)
+end = time.time()
+total_time  = end - start
 
 # If the model is binary, transform predictions from probabilities to binary labels
 if MODEL_TYPE == "binary":
@@ -92,4 +99,4 @@ normalize = False # True = use prediction percentages, False = use prediction co
 plot_confusion_matrix(cm, normalize=normalize, target_names=labels, title=title, filename=filenameCM)
 
 # Write the summary File
-write_summary_file(filenameSummary, SNR, accuracy, misclass, precision, recall, F1)
+write_summary_file(filenameSummary, SNR, accuracy, misclass, precision, recall, F1, num_predictions, total_time, configuration)

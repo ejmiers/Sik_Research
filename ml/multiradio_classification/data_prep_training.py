@@ -32,9 +32,9 @@ def prepData(SNR):
         print("Loading {}".format(devicePath + "\\" + signalFile))
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
-        # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
-        numSamplesTrain = 10000000
-        numSamplesTest = 2560000
+        # Grab 10000000 sample from the data for training, 2560000 samples for testing (80/20 rule)
+        numSamplesTrain = 40000000
+        numSamplesTest = 10000000
         numInputs = 128
 
         #signalSamples = np.random.choice(signalData, numSamples)
@@ -85,24 +85,33 @@ def normalize(dataTrain, dataTest):
     dataTest = dataTest.reshape(-1, 2, 128)
 
     # Save normalization model so predicted value scaling matches the training data
-    scalerModelPath = "{}multiclass_data_normalization_scaler.bin".format(PATH)
+    scalerModelPath = "{}multiclass_data_normalization_scaler.bin".format(DATASET_PATH)
     dump(scaler, scalerModelPath, compress=True)
 
     return dataTrain, dataTest
 
 
+SNR = "40dB"
+
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+# DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
+DATASET = "multiradio_{}-devices_{}\\".format(len(DEVICES), SNR)
+DATASET_PATH = PATH + DATASET
 dataNormalize = True
 
-SNR = "40dB" 
+# Create Necessary Directories
+if not os.path.isdir(DATASET_PATH):
+    os.mkdir(DATASET_PATH)
+
+
 dataTrain, labelsTrain, dataTest, labelsTest = prepData(SNR)
 
 if dataNormalize:
     dataTrain, dataTest = normalize(dataTrain, dataTest)
 
-np.save("{}multiclass_training_samples_{}.npy".format(PATH, SNR), dataTrain)
-np.save("{}multiclass_training_labels_{}.npy".format(PATH, SNR), labelsTrain)
+np.save("{}multiclass_training_samples_{}.npy".format(DATASET_PATH, SNR), dataTrain)
+np.save("{}multiclass_training_labels_{}.npy".format(DATASET_PATH, SNR), labelsTrain)
 
-np.save("{}multiclass_testing_samples_{}.npy".format(PATH, SNR), dataTest)
-np.save("{}multiclass_testing_labels_{}.npy".format(PATH, SNR), labelsTest)
+np.save("{}multiclass_testing_samples_{}.npy".format(DATASET_PATH, SNR), dataTest)
+np.save("{}multiclass_testing_labels_{}.npy".format(DATASET_PATH, SNR), labelsTest)

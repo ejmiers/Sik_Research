@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from joblib import load
 import os
 
-def prepData(noise):
+def prepData(SNR):
 
     deviceSamples = []
     deviceLabels = []
@@ -21,7 +21,7 @@ def prepData(noise):
         devicePath = os.path.join(PATH, device)
         label = DEVICES.index(device)
 
-        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith("_" + str(noise) + ".data")), None)
+        signalFile =  next((s for s in os.listdir(devicePath) if s.endswith("_" + str(SNR) + ".data")), None)
    
         if not signalFile:
             continue
@@ -31,11 +31,12 @@ def prepData(noise):
 
         # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
         numSamples = 10000000
+        startIndex = 0
         numInputs = 128
 
         #signalSamples = np.random.choice(signalData, numSamples)
         # signalSamples = signalData[:numSamples]
-        signalSamples = signalData[len(signalData)-numSamples:len(signalData)]
+        signalSamples = signalData[startIndex:startIndex+numSamples]
         
         # Separate into real and imaginary components
         real = signalSamples.real
@@ -62,22 +63,28 @@ def normalize(data):
 
     # Normalize for Gradient Descent
     data = data.reshape(-1,2)
-    scaler = load("{}multiclass_data_normalization_scaler.bin".format(PATH))
+    scaler = load("{}multiclass_data_normalization_scaler.bin".format(DATASET_PATH))
     data = scaler.transform(data)
     data = data.reshape(-1, 2, 128)
 
     return data
 
 
+SNR = "2dB" 
+
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DEVICES = ["mRo_1", "mRo_2", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+#DEVICES = ["mRo_1", "mRo_2", "mRo_3","3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DEVICES = ["RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+#DATASET = "multiradio_{}-devices_40dB\\".format(len(DEVICES))
+DATASET = "multiradio_RFD900-devices_40dB\\"
+DATASET_PATH = PATH + DATASET
 dataNormalize = True
 
-noise = "40dB" 
-data, labels = prepData(noise)
+
+data, labels = prepData(SNR)
 
 if dataNormalize:
     data = normalize(data)
 
-np.save("{}multiclass_prediction_samples_{}.npy".format(PATH, noise), data)
-np.save("{}multiclass_prediction_labels_{}.npy".format(PATH, noise), labels)
+np.save("{}multiclass_prediction_samples_{}.npy".format(DATASET_PATH, SNR), data)
+np.save("{}multiclass_prediction_labels_{}.npy".format(DATASET_PATH, SNR), labels)

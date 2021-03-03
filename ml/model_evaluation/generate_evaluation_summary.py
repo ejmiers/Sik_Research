@@ -95,7 +95,7 @@ def plot_confusion_matrix(cm,
         plt.show()
 
 
-def write_summary_file(filename, SNR, accuracy, misclass, precision, recall, F1):
+def write_summary_file(filename, SNR, accuracy, misclass, precision, recall, F1, num_predictions, total_time, configuration="GPU"):
 
     with open(filename, "w") as f:
         f.write("EVALUATION RESULTS\n")
@@ -107,3 +107,8 @@ def write_summary_file(filename, SNR, accuracy, misclass, precision, recall, F1)
         f.write("Model Precision: {}\n".format(precision))
         f.write("Model Recall: {}\n".format(recall))
         f.write("F1 Score: {}\n".format(F1))
+        f.write("\n")
+        f.write("Configuration: {}\n".format(configuration))
+        f.write("Number of Predictions: {}\n".format(num_predictions[0]))
+        f.write("Total Prediction Time: {}\n".format(total_time))
+        f.write("Time per Prediction: {}\n".format(float(total_time/num_predictions[0])))

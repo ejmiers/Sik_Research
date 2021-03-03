@@ -73,11 +73,11 @@ def normalize(data):
 
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DATASET = "binary_mRo_1_4-rogues_no_noise\\"
+DATASET = "binary_mRo_1_8-rogues_no_noise\\"
 DATASET_PATH = PATH + DATASET
-DEVICES = ["mRo_1", "RFD900_114"]
+DEVICES = ["mRo_1", "mRo_2"]
 KNOWN_DEVICE = "mRo_1"
-NORMALIZATION_SCALER = "3DR_TL1"
+NORMALIZATION_SCALER = "mRo_2"
 normalizeData = True
 
 SNR = "2dB" 

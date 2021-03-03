@@ -67,13 +67,13 @@ def writeResultsToSummary(foldLoss, foldAccuracy, totalTime):
 
 #====================================GLOBALS============================================================
 
-ROGUE_DEVICES = ["mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
-KNOWN_DEVICE = "mRo_1"
+ROGUE_DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_112", "RFD900_113", "RFD900_114"]
+KNOWN_DEVICE = "RFD900_111"
 
 SNR = "no_noise"
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DATASET_PATH = "F:\\Research\\Data\\Hardware Signals\\binary_mRo_1_4-rogues_no_noise\\"
+DATASET_PATH = "F:\\Research\\Data\\Hardware Signals\\binary_RFD900_111_8-rogues_no_noise\\"
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 runPath = PATH + "models\\binary\\" + trainingDate + " ({} Known)".format(KNOWN_DEVICE)

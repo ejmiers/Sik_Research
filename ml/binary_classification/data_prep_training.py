@@ -53,7 +53,7 @@ def prepData(SNR):
             numInputs = 128
 
             # Designate Signal Data usage for each set.
-            numSamplesTrain = 50000000
+            numSamplesTrain = 15000064
             numSamplesVal= 20000000
             numSamplesTest = 40000000
 
@@ -107,11 +107,11 @@ def prepData(SNR):
             del iq_labelsTest
 
 
-DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
-ROGUE_DEVICES = ["mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
-KNOWN_DEVICE = "mRo_1"
+DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+ROGUE_DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_112", "RFD900_113", "RFD900_114"]
+KNOWN_DEVICE = "RFD900_111"
 
-SNR = "no_noise" 
+SNR = "no-noise" 
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
 DATASET = "binary_{}_{}-rogues_{}".format(KNOWN_DEVICE, len(ROGUE_DEVICES), SNR)
