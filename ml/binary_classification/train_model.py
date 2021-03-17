@@ -59,9 +59,6 @@ def writeResultsToSummary(foldLoss, foldAccuracy, totalTime):
         f.write("Average Model Accuracy: {}\n".format(np.mean(foldAccuracy)))
         f.write("Standard Deviation Model Accuracy: {}\n\n".format(np.std(foldAccuracy)))
 
-        # f.write("Best Model Loss: {}\n".format(bestModelLoss))
-        # f.write("Best Model Accuracy: {}\n\n".format(bestModelAccuracy))
-
         f.write("Total trainining time (s): {}".format(totalTime))
 
 

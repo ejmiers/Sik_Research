@@ -83,11 +83,10 @@ def writeResultsToSummary(foldLoss, foldAccuracy, bestModelLoss, bestModelAccura
         f.write("Total trainining time (s): {}".format(totalTime))
         
 # Globals
-SNR = "no_noise"
+SNR = "40dB"
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-#DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-DEVICES = ["RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
 DATASET_PATH =  PATH + "multiradio_{}-RFD900_{}\\".format(len(DEVICES), SNR)
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
