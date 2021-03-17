@@ -83,12 +83,12 @@ def writeResultsToSummary(foldLoss, foldAccuracy, bestModelLoss, bestModelAccura
         f.write("Total trainining time (s): {}".format(totalTime))
         
 # Globals
-SNR = "40dB"
+SNR = "no_noise"
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-DATASET_PATH =  PATH + "multiradio_3DR-devices_{}\\".format(SNR)
-# DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
+#DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DEVICES = ["RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DATASET_PATH =  PATH + "multiradio_{}-RFD900_{}\\".format(len(DEVICES), SNR)
 
 trainingDate = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 runPath = PATH + "models\\multiradio\\" + trainingDate
@@ -177,7 +177,8 @@ for train, validate in kfold.split(X_train, Y_train):
         # RegularizedDense(sizeHiddenLayer),
         # keras.layers.Dropout(rate=dropoutRate),
         # RegularizedDense(sizeHiddenLayer),
-        keras.layers.Dense(len(DEVICES), activation=activationOutput)
+        # keras.layers.Dense(len(DEVICES), activation=activationOutput)
+        keras.layers.Dense(2, activation=activationOutput)
     ])
 
     model.compile(loss = lossFunction,
@@ -189,11 +190,11 @@ for train, validate in kfold.split(X_train, Y_train):
 
     # Implement early stopping with checkpoints to curb overfitting
     esEpochs = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=esPatience)
-    #esValLoss = EarlyStoppingByLossVal(monitor='val_loss', value=0.09, verbose=1)
+    esValLoss = EarlyStoppingByLossVal(monitor='val_loss', value=5e-5, verbose=1)
     mc = keras.callbacks.ModelCheckpoint(bestModelPath, monitor='val_accuracy', mode='max', verbose=1, save_best_only=True)
 
     # Train the model
-    history = model.fit(X_train[train], Y_train[train], validation_data=(X_train[validate], Y_train[validate]), epochs=numEpochs, batch_size=batchSize, callbacks=[esEpochs, mc])
+    history = model.fit(X_train[train], Y_train[train], validation_data=(X_train[validate], Y_train[validate]), epochs=numEpochs, batch_size=batchSize, callbacks=[esEpochs, esValLoss, mc])
 
     # Evaluate the best model
     bestModel = keras.models.load_model(bestModelPath)

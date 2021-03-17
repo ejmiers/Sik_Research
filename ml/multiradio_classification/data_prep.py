@@ -29,14 +29,12 @@ def prepData(SNR):
         print("Loading {}".format(devicePath + "\\" + signalFile))
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
-        # Grab 10000000 random sample from the data for training, 2560000 samples for testing (80/20 rule)
+        # Grab samples from the data for training and testing
         numSamples = 10000000
-        startIndex = 0
+        startIndex = (len(signalData)-1) - numSamples
         numInputs = 128
 
-        #signalSamples = np.random.choice(signalData, numSamples)
-        # signalSamples = signalData[:numSamples]
-        signalSamples = signalData[startIndex:startIndex+numSamples]
+        signalSamples = signalData[startIndex:startIndex + numSamples]
         
         # Separate into real and imaginary components
         real = signalSamples.real
@@ -70,13 +68,11 @@ def normalize(data):
     return data
 
 
-SNR = "2dB" 
+SNR = "40dB" 
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-#DEVICES = ["mRo_1", "mRo_2", "mRo_3","3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-DEVICES = ["RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-#DATASET = "multiradio_{}-devices_40dB\\".format(len(DEVICES))
-DATASET = "multiradio_RFD900-devices_40dB\\"
+DEVICES = ["mRo_1", "mRo_2", "mRo_3","3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DATASET = "multiradio_{}-devices_40dB\\".format(len(DEVICES))
 DATASET_PATH = PATH + DATASET
 dataNormalize = True
 

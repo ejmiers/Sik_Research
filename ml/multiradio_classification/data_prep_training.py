@@ -32,7 +32,7 @@ def prepData(SNR):
         print("Loading {}".format(devicePath + "\\" + signalFile))
         signalData = np.fromfile(os.path.join(devicePath, signalFile), dtype=np.complex64)
 
-        # Grab 10000000 sample from the data for training, 2560000 samples for testing (80/20 rule)
+        # Grab sample from the data for training and testing
         numSamplesTrain = 40000000
         numSamplesTest = 10000000
         numInputs = 128
@@ -94,9 +94,8 @@ def normalize(dataTrain, dataTest):
 SNR = "40dB"
 
 PATH = "F:\\Research\\Data\\Hardware Signals\\"
-# DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
-DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1"]
-DATASET = "multiradio_{}-devices_{}\\".format(len(DEVICES), SNR)
+DEVICES = ["mRo_1", "mRo_2", "mRo_3", "3DR_T1", "3DR_TL1", "RFD900_111", "RFD900_112", "RFD900_113", "RFD900_114"]
+DATASET = "multiradio_{}-RFD900_{}\\".format(len(DEVICES), SNR)
 DATASET_PATH = PATH + DATASET
 dataNormalize = True
 
