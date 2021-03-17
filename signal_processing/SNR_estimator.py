@@ -5,10 +5,10 @@ import os
 # PATH = "/media/ericmiers/Grad School Data/Research/Data/Simulated Signals/"
 # DEVICES = ["dev_0", "dev_1", "dev_2", "dev_3"]
 
-PATH = "/media/ejmie518/Grad School Data/Research/Data/Hardware Signals/"
-DEVICES = ["mRo_1"]
+PATH = "F:/Research/Data/Hardware Signals/"
+DEVICES = ["RFD900_113"]
 
-noiseAmp = 0.193
+noiseAmp = 0.2
 
 def calculateSNR(signal, noise):
     # Compute power of noise (dB)
@@ -85,4 +85,4 @@ def getSNRs():
 SNRs = getSNRs()
 
 for SNR in SNRs:
-    print(f"\nSignal SNR: {SNR} (db)")
+    print(f"\nSignal SNR: {SNR} (dB)")
